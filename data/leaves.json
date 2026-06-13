@@ -1,0 +1,5 @@
+[
+  { "employee": "Sophie Martin", "start": "2026-07-15", "end": "2026-07-22", "type": "CP", "status": "pending", "days": 6 },
+  { "employee": "Marc Petit", "start": "2026-08-01", "end": "2026-08-05", "type": "RTT", "status": "approved", "days": 3 },
+  { "employee": "Emma Laurent", "start": "2026-07-10", "end": "2026-07-12", "type": "CP", "status": "refused", "days": 2 }
+]

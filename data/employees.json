@@ -1,0 +1,10 @@
+[
+  { "id": 1, "firstName": "Sophie", "lastName": "Martin", "role": "Boulanger", "contractType": "CDI", "weeklyHours": 35, "initials": "SM", "color": "#6C63FF" },
+  { "id": 2, "firstName": "Lucas", "lastName": "Dubois", "role": "Vendeur", "contractType": "CDI", "weeklyHours": 35, "initials": "LD", "color": "#00D4AA" },
+  { "id": 3, "firstName": "Camille", "lastName": "Bernard", "role": "Pâtissier", "contractType": "CDI", "weeklyHours": 35, "initials": "CB", "color": "#FFB347" },
+  { "id": 4, "firstName": "Marc", "lastName": "Petit", "role": "Responsable", "contractType": "CDI", "weeklyHours": 39, "initials": "MP", "color": "#FF8C42" },
+  { "id": 5, "firstName": "Léa", "lastName": "Durand", "role": "Vendeur", "contractType": "CDD", "weeklyHours": 30, "initials": "LD", "color": "#00D4AA" },
+  { "id": 6, "firstName": "Thomas", "lastName": "Moreau", "role": "Boulanger", "contractType": "CDI", "weeklyHours": 35, "initials": "TM", "color": "#6C63FF" },
+  { "id": 7, "firstName": "Emma", "lastName": "Laurent", "role": "Vendeur", "contractType": "CDD", "weeklyHours": 25, "initials": "EL", "color": "#00D4AA" },
+  { "id": 8, "firstName": "Antoine", "lastName": "Rousseau", "role": "Pâtissier", "contractType": "CDI", "weeklyHours": 35, "initials": "AR", "color": "#FFB347" }
+]
