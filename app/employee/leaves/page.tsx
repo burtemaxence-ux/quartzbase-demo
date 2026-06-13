@@ -21,8 +21,6 @@ type ModalState = "closed" | "open" | "sent";
 export default function LeavesPage() {
   const [modal, setModal] = useState<ModalState>("closed");
 
-  const myLeaves = leaves.filter((l) => l.employee === "Lucas Dubois");
-
   function openModal() {
     setModal("open");
     setTimeout(() => setModal("sent"), 1200);

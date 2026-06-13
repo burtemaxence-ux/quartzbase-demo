@@ -1,7 +1,6 @@
 "use client";
 
 import { ChevronLeft, ChevronRight, CheckCircle } from "lucide-react";
-import { ShiftBar } from "@/components/shift-bar";
 import employees from "@/data/employees.json";
 import shifts from "@/data/shifts.json";
 

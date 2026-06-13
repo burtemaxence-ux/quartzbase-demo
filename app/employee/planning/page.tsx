@@ -22,11 +22,6 @@ function getWeekDates() {
   });
 }
 
-function getTodayKey(): string {
-  const d = new Date().getDay();
-  return DAYS[d === 0 ? 6 : d - 1];
-}
-
 export default function EmployeePlanningPage() {
   const weekDays = getWeekDates();
   const myId = currentEmployee.id;

@@ -1,9 +1,8 @@
 "use client";
 
-import { Bell, ChevronDown, LogOut, LayoutDashboard, Users } from "lucide-react";
+import { Bell, ChevronDown, LayoutDashboard, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { cn } from "@/lib/utils";
 
 interface TopbarProps {
   mode: "manager" | "employee";

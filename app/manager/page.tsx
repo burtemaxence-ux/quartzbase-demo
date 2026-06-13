@@ -1,8 +1,7 @@
 "use client";
 
-import { Users, CalendarCheck, AlertTriangle, Clock, TrendingUp, ChevronRight } from "lucide-react";
+import { Users, CalendarCheck, AlertTriangle, TrendingUp, ChevronRight } from "lucide-react";
 import { StatCard } from "@/components/stat-card";
-import { ShiftBar } from "@/components/shift-bar";
 import stats from "@/data/stats.json";
 import shifts from "@/data/shifts.json";
 
