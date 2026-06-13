@@ -95,6 +95,9 @@
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
 }
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
 
 /* ─── Utility classes ────────────────────────────────────────────────── */
 .animate-card-reveal { animation: cardReveal 0.4s cubic-bezier(0.16, 1, 0.3, 1) both; }

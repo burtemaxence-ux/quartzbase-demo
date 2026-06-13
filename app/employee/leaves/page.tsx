@@ -214,9 +214,6 @@ export default function LeavesPage() {
         </div>
       )}
 
-      <style jsx global>{`
-        @keyframes spin { to { transform: rotate(360deg); } }
-      `}</style>
     </div>
   );
 }
