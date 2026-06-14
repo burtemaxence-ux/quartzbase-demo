@@ -1,236 +1,235 @@
-"use client";
+'use client'
 
-import { Users, CalendarCheck, AlertTriangle, TrendingUp, ChevronRight } from "lucide-react";
-import { StatCard } from "@/components/stat-card";
-import stats from "@/data/stats.json";
-import shifts from "@/data/shifts.json";
+import { useState, useEffect } from 'react'
+import Link from 'next/link'
+import type { ElementType } from 'react'
+import {
+  Calendar, Users, BarChart3, Clock, Settings, Palmtree,
+  ArrowRight, AlertTriangle,
+} from 'lucide-react'
 
-const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-const DAY_LABELS: Record<string, string> = {
-  Mon: "Lun", Tue: "Mar", Wed: "Mer", Thu: "Jeu", Fri: "Ven", Sat: "Sam", Sun: "Dim",
-};
+// ── Hardcoded demo data ────────────────────────────────────────────────────────
 
-function getTodayKey(): string {
-  const d = new Date().getDay();
-  return DAYS[d === 0 ? 6 : d - 1];
+const DEMO = {
+  employeeCount: 8,
+  pendingCount: 3,
+  presenceRate: 87,
+  latenessCount: 2,
+  sparklineData: [100, 90, 87, 95, 80, 0, 0],
 }
 
-export default function ManagerDashboard() {
-  const today = getTodayKey();
-  const todayLabel = DAY_LABELS[today] ?? "Aujourd'hui";
-  const todayShifts = shifts.filter((s) => s.day === today);
+const TODAY_LABEL = new Date().toLocaleDateString('fr-FR', {
+  weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+})
 
-  const dateStr = new Date().toLocaleDateString("fr-FR", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-  const dateFormatted = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
+function getCurrentWeek() {
+  const now = new Date()
+  const start = new Date(now.getFullYear(), 0, 1)
+  return Math.ceil((Math.floor((now.getTime() - start.getTime()) / 86400000) + start.getDay() + 1) / 7)
+}
 
-  const cards = [
-    {
-      label: "Taux de présence",
-      value: stats.presenceRate,
-      suffix: "%",
-      color: "green",
-      icon: TrendingUp,
-      trend: "+3%",
-      delay: 0,
-    },
-    {
-      label: `Employés présents`,
-      value: stats.activeEmployees,
-      suffix: `/${stats.totalEmployees}`,
-      color: "violet",
-      icon: Users,
-      delay: 80,
-    },
-    {
-      label: "Congés en attente",
-      value: stats.pendingLeaves,
-      color: "yellow",
-      icon: CalendarCheck,
-      delay: 160,
-    },
-    {
-      label: "Score conformité",
-      value: stats.complianceScore,
-      suffix: "/100",
-      color: "green",
-      icon: AlertTriangle,
-      trend: "✓",
-      delay: 240,
-    },
-  ];
+// ── Mini sparkline ─────────────────────────────────────────────────────────────
 
-  const quickActions = [
-    { label: "Publier le planning", color: "var(--violet)" },
-    { label: "Valider les congés", color: "var(--yellow)" },
-    { label: "Exporter PDF", color: "var(--text-muted)" },
-  ];
-
+function MiniSparkline({ data, color }: { data: number[]; color: string }) {
+  const max = Math.max(...data, 1)
+  const h = 22, barW = 5, gap = 2
+  const totalW = data.length * (barW + gap) - gap
   return (
-    <div className="animate-dashboard" style={{ display: "flex", flexDirection: "column", gap: "28px" }}>
-      {/* Header */}
-      <div>
-        <h1
-          style={{
-            fontFamily: "var(--font-syne)",
-            fontWeight: 800,
-            fontSize: "24px",
-            color: "var(--text-primary)",
-            marginBottom: "4px",
-          }}
-        >
-          Bonjour Maxence 👋
-        </h1>
-        <p style={{ fontSize: "14px", color: "var(--text-muted)" }}>
-          La Boulangerie du Soleil · {dateFormatted}
-        </p>
+    <svg width={totalW} height={h} aria-hidden="true">
+      {data.map((val, i) => {
+        const barH = val > 0 ? Math.max(4, Math.round((val / max) * h)) : 4
+        return (
+          <rect key={i} x={i * (barW + gap)} y={h - barH} width={barW} height={barH} rx={2}
+            fill={val > 0 ? color : 'rgba(255,255,255,0.06)'} opacity={val > 0 ? 0.7 : 1} />
+        )
+      })}
+    </svg>
+  )
+}
+
+// ── Count-up hook ──────────────────────────────────────────────────────────────
+
+function useCountUp(target: number, duration = 800): number {
+  const [value, setValue] = useState(0)
+  useEffect(() => {
+    if (target === 0) { setValue(0); return }
+    let startTime: number | null = null
+    let rafId: number
+    const step = (ts: number) => {
+      if (startTime === null) startTime = ts
+      const progress = Math.min((ts - startTime) / duration, 1)
+      setValue(Math.round((1 - Math.pow(1 - progress, 3)) * target))
+      if (progress < 1) { rafId = requestAnimationFrame(step) }
+    }
+    rafId = requestAnimationFrame(step)
+    return () => cancelAnimationFrame(rafId)
+  }, [target, duration])
+  return value
+}
+
+// ── KPI Card ──────────────────────────────────────────────────────────────────
+
+interface KpiCardProps {
+  label: string; value: number; color: string; icon: ElementType; iconBg: string
+  suffix?: string; progressPct: number; subLabel?: string; subLabelColored?: boolean; sparkline?: number[]
+}
+
+function KpiCard({ label, value, color, icon: Icon, iconBg, suffix = '', progressPct, subLabel, subLabelColored, sparkline }: KpiCardProps) {
+  const animated = useCountUp(value)
+  const [hovered, setHovered] = useState(false)
+  return (
+    <div
+      onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}
+      style={{
+        backgroundColor: '#0f0f16',
+        border: `1px solid ${hovered ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.06)'}`,
+        borderRadius: 14, padding: '20px 22px',
+        transform: hovered ? 'translateY(-2px)' : 'translateY(0)',
+        boxShadow: hovered ? '0 0 0 1px rgba(108,99,255,0.2), 0 8px 24px rgba(0,0,0,0.3), 0 0 40px rgba(108,99,255,0.06)' : 'none',
+        transition: 'all 200ms ease',
+        display: 'flex', flexDirection: 'column' as const, gap: 10,
+      }}
+    >
+      <div style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Icon className="h-4 w-4" style={{ color }} />
       </div>
-
-      {/* KPI Cards */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-          gap: "16px",
-        }}
-      >
-        {cards.map((c) => (
-          <StatCard key={c.label} {...c} />
-        ))}
-      </div>
-
-      {/* Today's planning */}
-      <div className="dp-card animate-fade-slide-up" style={{ padding: "24px", animationDelay: "300ms" }}>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: "20px",
-          }}
-        >
-          <div>
-            <h2
-              style={{
-                fontFamily: "var(--font-syne)",
-                fontWeight: 700,
-                fontSize: "16px",
-                color: "var(--text-primary)",
-              }}
-            >
-              Planning du {todayLabel.toLowerCase()}
-            </h2>
-            <p style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "2px" }}>
-              {todayShifts.length} shift{todayShifts.length > 1 ? "s" : ""} planifié
-              {todayShifts.length > 1 ? "s" : ""}
-            </p>
-          </div>
-          <a
-            href="/manager/planning"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "4px",
-              fontSize: "12px",
-              color: "var(--violet)",
-              textDecoration: "none",
-              fontWeight: 600,
-            }}
-          >
-            Voir tout <ChevronRight size={14} />
-          </a>
-        </div>
-
-        {todayShifts.length === 0 ? (
-          <p style={{ color: "var(--text-muted)", fontSize: "13px", textAlign: "center", padding: "20px 0" }}>
-            Aucun shift planifié aujourd&apos;hui
-          </p>
-        ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-            {todayShifts.map((shift, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                <div
-                  style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: "8px",
-                    background: `${shift.color}22`,
-                    border: `1px solid ${shift.color}44`,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: "11px",
-                    fontWeight: 700,
-                    color: shift.color,
-                    flexShrink: 0,
-                  }}
-                >
-                  {shift.employeeName.split(" ").map((n) => n[0]).join("")}
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-primary)" }}>
-                    {shift.employeeName}
-                  </div>
-                  <div style={{ fontSize: "11px", color: "var(--text-muted)" }}>{shift.role}</div>
-                </div>
-                <div
-                  style={{
-                    fontSize: "12px",
-                    fontWeight: 600,
-                    color: shift.color,
-                    background: `${shift.color}18`,
-                    padding: "3px 8px",
-                    borderRadius: "6px",
-                  }}
-                >
-                  {shift.start}–{shift.end}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Quick actions */}
-      <div className="animate-fade-slide-up" style={{ animationDelay: "400ms" }}>
-        <h2
-          style={{
-            fontFamily: "var(--font-syne)",
-            fontWeight: 700,
-            fontSize: "15px",
-            color: "var(--text-primary)",
-            marginBottom: "12px",
-          }}
-        >
-          Actions rapides
-        </h2>
-        <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-          {quickActions.map(({ label, color }) => (
-            <button
-              key={label}
-              disabled
-              title="Fonctionnalité désactivée en démo"
-              style={{
-                padding: "9px 18px",
-                borderRadius: "10px",
-                fontSize: "13px",
-                fontWeight: 600,
-                color,
-                background: `${color}18`,
-                border: `1px solid ${color}33`,
-                cursor: "not-allowed",
-                opacity: 0.6,
-              }}
-            >
-              {label}
-            </button>
-          ))}
+      <p style={{ fontSize: 11, textTransform: 'uppercase' as const, letterSpacing: '0.06em', color: '#5a5a72', margin: 0 }}>{label}</p>
+      <p style={{ fontSize: 32, fontWeight: 700, lineHeight: 1, color, fontFamily: 'var(--font-syne)', margin: 0 }}>{animated}{suffix}</p>
+      {subLabel && <p style={{ fontSize: 12, color: subLabelColored ? color : '#9090a8', margin: 0 }}>{subLabel}</p>}
+      {sparkline && <div style={{ marginTop: 4 }}><MiniSparkline data={sparkline} color={color} /></div>}
+      <div style={{ marginTop: 'auto', paddingTop: 8 }}>
+        <div style={{ height: 5, borderRadius: 99, backgroundColor: 'rgba(255,255,255,0.04)', overflow: 'hidden' }}>
+          <div style={{ height: '100%', borderRadius: 99, width: `${Math.min(Math.max(progressPct, 0), 100)}%`, backgroundColor: color, transition: 'width 700ms ease' }} />
         </div>
       </div>
     </div>
-  );
+  )
+}
+
+// ── Modules ────────────────────────────────────────────────────────────────────
+
+const MODULES: { title: string; description: string; icon: ElementType; href: string; accentColor: string; accentBg: string }[] = [
+  { title: 'Employés',   description: 'Profils, contrats et rôles.',    icon: Users,    href: '/manager/employees', accentColor: '#00D4AA', accentBg: 'rgba(0,212,170,0.15)' },
+  { title: 'Rapport',    description: 'Synthèse horaire et coûts.',      icon: BarChart3, href: '/manager/rapport',  accentColor: '#6C63FF', accentBg: 'rgba(108,99,255,0.15)' },
+  { title: 'Congés',     description: "Demandes et soldes d'absence.",   icon: Palmtree, href: '/manager/conges',   accentColor: '#FFB347', accentBg: 'rgba(255,179,71,0.15)' },
+  { title: 'Présences',  description: 'Horaires réels et pointages.',    icon: Clock,    href: '/manager/presences', accentColor: '#FF6B6B', accentBg: 'rgba(255,107,107,0.15)' },
+  { title: 'Paramètres', description: 'Configuration et règles.',        icon: Settings, href: '/manager/settings', accentColor: '#5a5a72', accentBg: 'rgba(90,90,114,0.15)' },
+]
+
+// ── Page ──────────────────────────────────────────────────────────────────────
+
+export default function ManagerDashboard() {
+  const [visible, setVisible] = useState(false)
+  const [hovered, setHovered] = useState<string | null>(null)
+  useEffect(() => { const t = setTimeout(() => setVisible(true), 100); return () => clearTimeout(t) }, [])
+
+  const { employeeCount, pendingCount, presenceRate, latenessCount, sparklineData } = DEMO
+  const presenceMeta = presenceRate >= 80
+    ? { color: '#00D4AA', iconBg: 'rgba(0,212,170,0.15)', label: 'Bonne présence' }
+    : { color: '#FFB347', iconBg: 'rgba(255,179,71,0.15)', label: 'Présence à surveiller' }
+
+  return (
+    <div className="min-h-screen dashboard-content" style={{ backgroundColor: 'var(--bg-page)' }}>
+      <div className="max-w-5xl mx-auto px-6 py-8 space-y-6">
+
+        {/* Header */}
+        <div className="flex items-start justify-between gap-4 flex-wrap pt-1 dashboard-s0">
+          <div>
+            <h1 className="text-[20px] font-medium tracking-[-0.02em]" style={{ color: 'var(--text-primary)' }}>
+              Bonjour Maxence 👋
+            </h1>
+            <p className="text-[13px] mt-1" style={{ color: 'var(--text-tertiary)' }}>
+              Voici un aperçu de votre activité.
+            </p>
+            <p className="text-[11px] uppercase tracking-[0.06em] mt-1.5 capitalize" style={{ color: 'var(--text-tertiary)' }}>
+              La Boulangerie du Soleil · {TODAY_LABEL}
+            </p>
+          </div>
+          <Link href="/manager/planning" className="btn-primary flex-shrink-0">
+            <Calendar className="h-3.5 w-3.5" />
+            Voir le planning
+          </Link>
+        </div>
+
+        {/* KPI Cards */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 dashboard-s1">
+          <KpiCard label={`Présence · S${getCurrentWeek()}`} value={presenceRate} suffix="%" color={presenceMeta.color} icon={BarChart3} iconBg={presenceMeta.iconBg} progressPct={presenceRate} subLabel={presenceMeta.label} subLabelColored sparkline={sparklineData} />
+          <KpiCard label="Équipe" value={employeeCount} color="#6C63FF" icon={Users} iconBg="rgba(108,99,255,0.15)" progressPct={Math.min(employeeCount * 5, 100)} subLabel="employés actifs" />
+          <KpiCard label="Congés en attente" value={pendingCount} color="#FFB347" icon={Palmtree} iconBg="rgba(255,179,71,0.15)" progressPct={Math.min(pendingCount * 20, 100)} subLabel="demandes" />
+          <KpiCard label="Retards ce mois" value={latenessCount} color="#FF6B6B" icon={Clock} iconBg="rgba(255,107,107,0.15)" progressPct={Math.min(latenessCount * 10, 100)} subLabel="enregistrés" />
+        </div>
+
+        {/* Alertes */}
+        <div className="space-y-2 dashboard-s2">
+          <Link href="/manager/conges">
+            <div className="flex items-center gap-3 px-4 py-3 hover:bg-[rgba(255,179,71,0.05)] transition-colors" style={{ backgroundColor: 'rgba(255,179,71,0.08)', border: '1px solid rgba(255,179,71,0.2)', borderRadius: 10 }}>
+              <AlertTriangle className="h-3.5 w-3.5 flex-shrink-0" style={{ color: '#FFB347' }} />
+              <p className="flex-1 text-[13px]" style={{ color: '#f0f0f8' }}>{pendingCount} demandes de congés en attente de validation</p>
+              <span className="text-[12px] font-medium flex-shrink-0" style={{ color: '#FFB347' }}>Traiter →</span>
+            </div>
+          </Link>
+          <Link href="/manager/presences">
+            <div className="flex items-center gap-3 px-4 py-3 hover:bg-[rgba(255,107,107,0.05)] transition-colors" style={{ backgroundColor: 'rgba(255,107,107,0.08)', border: '1px solid rgba(255,107,107,0.2)', borderRadius: 10 }}>
+              <Clock className="h-3.5 w-3.5 flex-shrink-0" style={{ color: '#FF6B6B' }} />
+              <p className="flex-1 text-[13px]" style={{ color: '#f0f0f8' }}>{latenessCount} retards enregistrés ce mois</p>
+              <span className="text-[12px] font-medium flex-shrink-0" style={{ color: '#FF6B6B' }}>Voir →</span>
+            </div>
+          </Link>
+        </div>
+
+        {/* Modules */}
+        <div className="space-y-3 dashboard-s3">
+          <p className="text-[11px] uppercase tracking-[0.06em]" style={{ color: '#5a5a72' }}>Modules</p>
+
+          {/* Planning principal */}
+          <Link href="/manager/planning" className="block" style={{ opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(12px)', transition: 'opacity 0.4s ease, transform 0.4s ease' }}>
+            <div onMouseEnter={() => setHovered('/manager/planning')} onMouseLeave={() => setHovered(null)}
+              style={{ backgroundColor: '#0f0f16', border: `1px solid ${hovered === '/manager/planning' ? '#6C63FF' : 'rgba(255,255,255,0.06)'}`, borderRadius: 14, padding: '18px 20px', transform: hovered === '/manager/planning' ? 'translateY(-3px)' : 'translateY(0)', boxShadow: hovered === '/manager/planning' ? '0 0 0 1px rgba(108,99,255,0.2), 0 8px 24px rgba(0,0,0,0.3), 0 0 40px rgba(108,99,255,0.06)' : 'none', transition: 'all 200ms ease' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 24 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
+                  <div style={{ width: 40, height: 40, borderRadius: 10, backgroundColor: 'rgba(108,99,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <Calendar className="h-5 w-5" style={{ color: '#6C63FF' }} />
+                  </div>
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <p style={{ fontSize: 13, fontWeight: 700, color: '#f0f0f8', fontFamily: 'var(--font-syne)' }}>Planning</p>
+                      <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 6, backgroundColor: 'rgba(108,99,255,0.15)', color: '#6C63FF', border: '1px solid rgba(108,99,255,0.3)' }}>Principal</span>
+                    </div>
+                    <p style={{ fontSize: 12, color: '#9090a8', marginTop: 2 }}>Créez, modifiez et publiez les horaires de votre équipe.</p>
+                  </div>
+                </div>
+                <div className="btn-primary flex-shrink-0">Ouvrir <ArrowRight className="h-3.5 w-3.5" /></div>
+              </div>
+            </div>
+          </Link>
+
+          {/* Modules secondaires */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {MODULES.map(({ title, description, icon: Icon, href, accentColor, accentBg }, idx) => {
+              const badge = href === '/manager/conges' ? pendingCount : 0
+              return (
+                <Link key={href} href={href} className="block" style={{ opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(12px)', transition: `opacity 0.4s ease ${(idx + 1) * 60}ms, transform 0.4s ease ${(idx + 1) * 60}ms` }}>
+                  <div onMouseEnter={() => setHovered(href)} onMouseLeave={() => setHovered(null)}
+                    style={{ backgroundColor: '#0f0f16', border: `1px solid ${hovered === href ? '#6C63FF' : 'rgba(255,255,255,0.06)'}`, borderRadius: 14, padding: '18px 20px', height: '100%', transform: hovered === href ? 'translateY(-3px)' : 'translateY(0)', boxShadow: hovered === href ? '0 0 0 1px rgba(108,99,255,0.2), 0 8px 24px rgba(0,0,0,0.3), 0 0 40px rgba(108,99,255,0.06)' : 'none', transition: 'all 200ms ease' }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, marginBottom: 12 }}>
+                      <div style={{ width: 40, height: 40, borderRadius: 10, backgroundColor: accentBg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Icon className="h-4 w-4" style={{ color: accentColor }} />
+                      </div>
+                      {badge > 0 && <span style={{ backgroundColor: 'rgba(255,179,71,0.15)', color: '#FFB347', borderRadius: 6, fontSize: 10, fontWeight: 500, padding: '2px 6px' }}>{badge}</span>}
+                    </div>
+                    <p style={{ fontSize: 13, fontWeight: 700, color: '#f0f0f8', fontFamily: 'var(--font-syne)' }}>{title}</p>
+                    <p style={{ fontSize: 12, color: '#9090a8', marginTop: 4 }}>{description}</p>
+                    <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 500, color: '#6C63FF', opacity: hovered === href ? 1 : 0, transition: 'opacity 150ms ease' }}>
+                      Accéder <ArrowRight className="h-3 w-3" />
+                    </div>
+                  </div>
+                </Link>
+              )
+            })}
+          </div>
+        </div>
+
+      </div>
+    </div>
+  )
 }
