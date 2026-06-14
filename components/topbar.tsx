@@ -345,6 +345,14 @@ export function Topbar({
 
       {/* Right side */}
       <div className="flex items-center gap-3 flex-shrink-0">
+        {/* DÉMO badge */}
+        <span
+          className="hidden sm:inline-flex items-center text-[10px] font-bold tracking-[0.08em] px-2 py-0.5 rounded-md flex-shrink-0"
+          style={{ background: 'rgba(255,140,66,0.15)', border: '1px solid rgba(255,140,66,0.4)', color: '#FF8C42' }}
+        >
+          DÉMO
+        </span>
+
         <EstablishmentSwitcher
           establishments={DEMO_ESTABLISHMENTS}
           activeEstablishmentId="est-1"

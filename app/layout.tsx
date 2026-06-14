@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Syne, DM_Sans } from "next/font/google";
 import "./globals.css";
-import { DemoBanner } from "@/components/demo-banner";
 
 const syne = Syne({
   variable: "--font-syne",
@@ -28,8 +27,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr" className={`${syne.variable} ${dmSans.variable}`}>
-      <body className="min-h-screen" style={{ background: "var(--bg-primary)", color: "var(--text-primary)" }}>
-        <DemoBanner />
+      <body className="min-h-screen" style={{ background: "var(--bg-page)", color: "var(--text-primary)" }}>
         {children}
       </body>
     </html>
