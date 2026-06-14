@@ -1,163 +1,355 @@
-"use client";
+'use client'
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import type { ElementType } from 'react'
+import { useState, useRef, useEffect } from 'react'
+import Image from 'next/image'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { cn } from '@/lib/utils'
+import { getInitials, getEstablishmentInitials } from '@/lib/planning-utils'
 import {
-  LayoutDashboard,
-  CalendarDays,
-  Users,
-  ShieldCheck,
-  Settings,
-  HelpCircle,
-} from "lucide-react";
+  Calendar, Users, BarChart3, Clock, LineChart, Scale, Zap, BookOpen,
+  Palmtree, AlertTriangle, Upload, FileText,
+  Settings, ChevronLeft, ChevronRight, LogOut,
+  UtensilsCrossed, ShieldCheck, ChevronsUpDown, Plus, Check, ArrowLeftRight,
+} from 'lucide-react'
 
-const navItems = [
-  { href: "/manager", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/manager/planning", label: "Planning", icon: CalendarDays },
-  { href: "/manager/employees", label: "Employés", icon: Users },
-  { href: "/manager/compliance", label: "Conformité", icon: ShieldCheck },
-];
+// ── Types ─────────────────────────────────────────────────────────────────────
 
-const bottomItems = [
-  { href: "#", label: "Paramètres", icon: Settings },
-  { href: "#", label: "Aide", icon: HelpCircle },
-];
+interface EstablishmentEntry {
+  id: string
+  name: string
+}
 
-export function Sidebar() {
-  const pathname = usePathname();
+interface NavItem {
+  label: string
+  icon: ElementType
+  href: string
+  badge?: number
+  badgeColor?: 'orange' | 'red'
+  comingSoon?: boolean
+}
+
+interface NavGroup {
+  group: string
+  items: NavItem[]
+}
+
+// ── Demo data ─────────────────────────────────────────────────────────────────
+
+const DEMO_ESTABLISHMENTS: EstablishmentEntry[] = [
+  { id: 'est-1', name: 'La Boulangerie du Soleil' },
+]
+
+// ── Nav definition ────────────────────────────────────────────────────────────
+
+function buildManagerNav(pendingLeavesCount: number): NavGroup[] {
+  return [
+    {
+      group: 'Gestion',
+      items: [
+        { label: 'Planning',     icon: Calendar,   href: '/manager/planning' },
+        { label: 'Employés',     icon: Users,      href: '/manager/employees' },
+        { label: 'Rapport',      icon: BarChart3,  href: '/manager/rapport' },
+        { label: 'Analytiques',  icon: LineChart,  href: '/manager/analytics' },
+        { label: 'Badgeuse',     icon: Clock,      href: '/manager/presences' },
+      ],
+    },
+    {
+      group: 'Demandes',
+      items: [
+        { label: 'Congés',      icon: Palmtree,      href: '/manager/conges',     badge: pendingLeavesCount, badgeColor: 'orange' },
+        { label: 'Échanges',    icon: ArrowLeftRight, href: '/manager/echanges' },
+        { label: 'Marketplace', icon: Zap,            href: '/manager/marketplace' },
+        { label: 'Alertes',     icon: AlertTriangle,  href: '/manager/alertes',   badgeColor: 'red' },
+      ],
+    },
+    {
+      group: 'Outils',
+      items: [
+        { label: 'Conformité', icon: Scale,       href: '/manager/compliance' },
+        { label: 'Exports',    icon: Upload,      href: '/manager/settings/exports' },
+        { label: 'Journal',    icon: ShieldCheck, href: '/manager/audit-log' },
+        { label: 'Documents',  icon: FileText,    href: '#', comingSoon: true },
+      ],
+    },
+    {
+      group: 'Configuration',
+      items: [
+        { label: 'Paramètres', icon: Settings, href: '/manager/settings' },
+        { label: 'Aide',       icon: BookOpen, href: '/manager/help' },
+      ],
+    },
+  ]
+}
+
+const employeeNav: NavGroup[] = [
+  {
+    group: 'Navigation',
+    items: [
+      { label: 'Mon planning', icon: Calendar, href: '/employee/planning' },
+      { label: 'Mes congés',   icon: Palmtree, href: '/employee/conges' },
+      { label: 'Badgeuse',     icon: Clock,    href: '/employee/badgeuse' },
+      { label: 'Marketplace',  icon: Zap,      href: '/employee/marketplace' },
+    ],
+  },
+]
+
+// ── Badge ─────────────────────────────────────────────────────────────────────
+
+function Badge({ count, color }: { count: number; color: 'orange' | 'red' }) {
+  if (!count || count === 0) return null
+  return (
+    <span className={cn(
+      'ml-auto flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-[10px] font-bold leading-none',
+      count > 0 && 'animate-pulse',
+      color === 'orange' ? 'bg-orange-500 text-white' : 'bg-red-500 text-white'
+    )}>
+      {count > 99 ? '99+' : count}
+    </span>
+  )
+}
+
+// ── Sidebar ───────────────────────────────────────────────────────────────────
+
+interface SidebarProps {
+  role?: 'manager' | 'employee' | 'supervisor'
+  userName?: string
+  userEmail?: string
+  establishmentName?: string
+  orgLogoUrl?: string
+  pendingLeavesCount?: number
+  collapsed: boolean
+  onToggle: () => void
+}
+
+export function Sidebar({
+  role = 'manager',
+  userName = 'Maxence Burte',
+  userEmail = 'maxence@demo.quartzbase.com',
+  establishmentName = 'La Boulangerie du Soleil',
+  orgLogoUrl,
+  pendingLeavesCount = 3,
+  collapsed,
+  onToggle,
+}: SidebarProps) {
+  const pathname = usePathname()
+  const [switcherOpen, setSwitcherOpen] = useState(false)
+  const switcherRef = useRef<HTMLDivElement>(null)
+  const activeEstablishmentId = 'est-1'
+
+  useEffect(() => {
+    function handleOutsideClick(e: MouseEvent) {
+      if (switcherRef.current && !switcherRef.current.contains(e.target as Node)) {
+        setSwitcherOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleOutsideClick)
+    return () => document.removeEventListener('mousedown', handleOutsideClick)
+  }, [])
+
+  const navGroups = (role === 'manager' || role === 'supervisor')
+    ? buildManagerNav(pendingLeavesCount)
+    : employeeNav
+
+  function isActive(href: string) {
+    if (href === '#') return false
+    if (href === '/manager/settings') {
+      return pathname.startsWith('/manager/settings') &&
+        !pathname.startsWith('/manager/settings/exports')
+    }
+    return pathname === href || pathname.startsWith(href + '/')
+  }
 
   return (
     <aside
-      style={{
-        width: "var(--sidebar-width)",
-        background: "var(--bg-secondary)",
-        borderRight: "1px solid var(--border)",
-        display: "flex",
-        flexDirection: "column",
-        height: "100%",
-        flexShrink: 0,
-      }}
+      className={cn(
+        'flex flex-col h-screen bg-sidebar border-r border-sidebar-border transition-all duration-300 ease-in-out flex-shrink-0 relative z-20',
+        collapsed ? 'w-16' : 'w-[220px]'
+      )}
     >
-      {/* Nav section */}
-      <div style={{ flex: 1, padding: "16px 12px" }}>
-        <div
-          style={{
-            fontSize: "10px",
-            fontWeight: 700,
-            color: "var(--text-muted)",
-            letterSpacing: "0.12em",
-            textTransform: "uppercase",
-            padding: "0 8px",
-            marginBottom: "8px",
-          }}
-        >
-          Navigation
+      {/* ── Brand / Logo ─────────────────────────────────────────────── */}
+      <div className={cn(
+        'flex items-center h-14 border-b border-sidebar-border px-3 flex-shrink-0',
+        collapsed ? 'justify-center' : 'gap-2.5'
+      )}>
+        <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-[#4F46E5] flex-shrink-0">
+          <UtensilsCrossed className="h-3.5 w-3.5 text-white" />
         </div>
-        <nav style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-          {navItems.map(({ href, label, icon: Icon }) => {
-            const active =
-              href === "/manager"
-                ? pathname === "/manager"
-                : pathname.startsWith(href);
-            return (
-              <Link
-                key={href}
-                href={href}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "10px",
-                  padding: "9px 12px",
-                  borderRadius: "10px",
-                  fontSize: "13px",
-                  fontWeight: active ? 600 : 400,
-                  color: active ? "var(--violet)" : "var(--text-secondary)",
-                  background: active ? "var(--violet-muted)" : "transparent",
-                  textDecoration: "none",
-                  transition: "all 0.15s",
-                  borderLeft: active ? "2px solid var(--violet)" : "2px solid transparent",
-                }}
-                onMouseEnter={(e) => {
-                  if (!active) {
-                    (e.currentTarget as HTMLAnchorElement).style.background = "rgba(255,255,255,0.03)";
-                    (e.currentTarget as HTMLAnchorElement).style.color = "var(--text-primary)";
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!active) {
-                    (e.currentTarget as HTMLAnchorElement).style.background = "transparent";
-                    (e.currentTarget as HTMLAnchorElement).style.color = "var(--text-secondary)";
-                  }
-                }}
-              >
-                <Icon size={16} />
-                {label}
-              </Link>
-            );
-          })}
-        </nav>
+        {!collapsed && (
+          <div className="overflow-hidden">
+            <p className="font-semibold text-sidebar-foreground-active text-sm leading-tight truncate">
+              Quartzbase
+            </p>
+            <p className="text-[10px] text-sidebar-foreground/60 leading-tight">Gestion RH & Planning</p>
+          </div>
+        )}
       </div>
 
-      {/* Bottom items */}
-      <div
-        style={{
-          padding: "12px",
-          borderTop: "1px solid var(--border)",
-          display: "flex",
-          flexDirection: "column",
-          gap: "2px",
-        }}
-      >
-        {bottomItems.map(({ href, label, icon: Icon }) => (
-          <button
-            key={label}
-            onClick={() => {}}
-            title="Fonctionnalité désactivée en démo"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
-              padding: "9px 12px",
-              borderRadius: "10px",
-              fontSize: "13px",
-              color: "var(--text-muted)",
-              background: "transparent",
-              border: "none",
-              cursor: "not-allowed",
-              width: "100%",
-              opacity: 0.5,
-            }}
-          >
-            <Icon size={16} />
-            {label}
-          </button>
-        ))}
+      {/* ── Navigation ───────────────────────────────────────────────── */}
+      <nav className="flex-1 overflow-y-auto py-2 scrollbar-thin">
+        {navGroups.map((group, gi) => (
+          <div key={gi} className={cn('mb-1', gi > 0 && 'mt-3')}>
+            {!collapsed ? (
+              <p className="px-3 mb-1 text-[9px] font-bold tracking-[0.12em] text-sidebar-foreground/40 uppercase">
+                {group.group}
+              </p>
+            ) : (
+              gi > 0 && <div className="mx-3 mb-2 border-t border-sidebar-border/40" />
+            )}
 
-        {/* Plan badge */}
-        <div
-          style={{
-            margin: "8px 4px 4px",
-            background: "var(--violet-muted)",
-            border: "1px solid var(--border-active)",
-            borderRadius: "10px",
-            padding: "10px 12px",
-          }}
-        >
-          <div style={{ fontSize: "11px", color: "var(--text-muted)", marginBottom: "2px" }}>
-            Plan actuel
+            <ul className="space-y-0.5 px-1.5">
+              {group.items.map((item) => {
+                const active = isActive(item.href)
+                const Icon = item.icon
+                const disabled = item.comingSoon
+
+                return (
+                  <li key={item.href}>
+                    {disabled ? (
+                      <div
+                        className={cn(
+                          'flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm opacity-40 cursor-not-allowed select-none',
+                          collapsed ? 'justify-center' : ''
+                        )}
+                        title={collapsed ? `${item.label} (bientôt)` : undefined}
+                      >
+                        <Icon className="h-4 w-4 flex-shrink-0 text-sidebar-foreground" />
+                        {!collapsed && (
+                          <>
+                            <span className="flex-1 truncate text-sidebar-foreground text-[13px]">{item.label}</span>
+                            <span className="text-[9px] font-semibold text-sidebar-foreground/60 uppercase tracking-wide bg-sidebar-foreground/10 px-1.5 py-0.5 rounded">
+                              Bientôt
+                            </span>
+                          </>
+                        )}
+                      </div>
+                    ) : (
+                      <Link
+                        href={item.href}
+                        className={cn(
+                          'flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] transition-all duration-150 group',
+                          collapsed ? 'justify-center' : '',
+                          active
+                            ? 'bg-[#4F46E5]/10 text-[#4F46E5] font-semibold'
+                            : 'text-sidebar-foreground hover:bg-white/5 hover:text-sidebar-foreground-active'
+                        )}
+                        title={collapsed ? item.label : undefined}
+                      >
+                        <Icon className={cn(
+                          'h-4 w-4 flex-shrink-0 transition-colors',
+                          active
+                            ? 'text-[#4F46E5]'
+                            : 'text-sidebar-foreground/70 group-hover:text-sidebar-foreground-active'
+                        )} />
+                        {!collapsed && (
+                          <>
+                            <span className="flex-1 truncate">{item.label}</span>
+                            {item.badge !== undefined && item.badgeColor && (
+                              <Badge count={item.badge} color={item.badgeColor} />
+                            )}
+                          </>
+                        )}
+                        {collapsed && item.badge && item.badge > 0 ? (
+                          <span className={cn(
+                            'absolute top-1 right-1 h-2 w-2 rounded-full',
+                            item.badgeColor === 'orange' ? 'bg-orange-500' : 'bg-red-500'
+                          )} />
+                        ) : null}
+                      </Link>
+                    )}
+                  </li>
+                )
+              })}
+            </ul>
           </div>
-          <div
-            style={{
-              fontSize: "13px",
-              fontWeight: 700,
-              color: "var(--violet)",
-              fontFamily: "var(--font-syne)",
-            }}
-          >
-            Pro ✦
-          </div>
+        ))}
+      </nav>
+
+      {/* ── Bottom section ────────────────────────────────────────────── */}
+      <div className="flex-shrink-0 border-t border-sidebar-border">
+
+        {/* Establishment row */}
+        <div className={cn(
+          'flex items-center gap-2.5 px-3 py-3 border-b border-sidebar-border/50',
+          collapsed ? 'justify-center' : ''
+        )}>
+          {orgLogoUrl ? (
+            <div className="h-7 w-7 rounded-lg overflow-hidden flex-shrink-0 bg-white border border-sidebar-border/30">
+              <Image src={orgLogoUrl} alt={establishmentName} width={28} height={28} className="object-cover w-full h-full" />
+            </div>
+          ) : (
+            <div className="h-7 w-7 rounded-lg bg-[#4F46E5]/20 flex items-center justify-center flex-shrink-0">
+              <span className="text-[10px] font-bold text-[#4F46E5]">
+                {getEstablishmentInitials(establishmentName)}
+              </span>
+            </div>
+          )}
+          {!collapsed && (
+            <p className="text-[12px] font-medium text-sidebar-foreground-active truncate leading-tight">
+              {establishmentName}
+            </p>
+          )}
         </div>
+
+        {/* User row */}
+        <div className={cn(
+          'flex items-center px-3 py-3 gap-2.5',
+          collapsed ? 'justify-center' : ''
+        )}>
+          <div className="flex items-center justify-center w-7 h-7 rounded-full bg-[#4F46E5]/20 flex-shrink-0">
+            <span className="text-[10px] font-bold text-[#4F46E5]">
+              {getInitials(userName || userEmail)}
+            </span>
+          </div>
+          {!collapsed && (
+            <>
+              <div className="flex-1 overflow-hidden min-w-0">
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <p className="text-[12px] font-medium text-sidebar-foreground-active truncate leading-tight">
+                    {userName || 'Utilisateur'}
+                  </p>
+                  {role !== 'employee' && (
+                    <span className={cn(
+                      'shrink-0 text-[9px] font-bold px-1.5 py-0.5 rounded-full leading-none',
+                      role === 'manager'
+                        ? 'bg-[#4F46E5]/20 text-[#4F46E5]'
+                        : 'bg-amber-500/20 text-amber-600'
+                    )}>
+                      {role === 'manager' ? 'Manager' : 'Superviseur'}
+                    </span>
+                  )}
+                </div>
+                <p className="text-[10px] text-sidebar-foreground/60 truncate leading-tight">{userEmail}</p>
+              </div>
+              <button
+                onClick={() => alert('🎭 Mode démo — déconnexion désactivée')}
+                className="flex-shrink-0 p-1.5 rounded-md text-sidebar-foreground/50 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                title="Se déconnecter"
+              >
+                <LogOut className="h-3.5 w-3.5" />
+              </button>
+            </>
+          )}
+        </div>
+
+        {/* Collapse toggle */}
+        <button
+          onClick={onToggle}
+          className="w-full flex items-center justify-center py-2 text-sidebar-foreground/40 hover:text-sidebar-foreground-active hover:bg-white/5 transition-colors border-t border-sidebar-border/40"
+          title={collapsed ? 'Déplier' : 'Replier'}
+        >
+          {collapsed
+            ? <ChevronRight className="h-3.5 w-3.5" />
+            : (
+              <span className="flex items-center gap-1 text-[10px] font-medium tracking-wide">
+                <ChevronLeft className="h-3 w-3" />
+                Replier
+              </span>
+            )
+          }
+        </button>
       </div>
     </aside>
-  );
+  )
 }
