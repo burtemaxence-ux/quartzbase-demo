@@ -2,6 +2,7 @@
 
 import { ArrowLeftRight, Clock } from 'lucide-react'
 import { useState } from 'react'
+import { TutorialPanel } from '@/components/tutorial-panel'
 
 type Exchange = {
   id: string
@@ -93,6 +94,9 @@ export default function ManagerEchangesPage() {
       </div>
 
       <div style={{ padding: '20px', maxWidth: '680px', margin: '0 auto' }}>
+        <div style={{ marginBottom: 16 }}>
+          <TutorialPanel sectionId="exchanges" />
+        </div>
         {exchanges.length === 0 ? (
           /* Empty state */
           <div

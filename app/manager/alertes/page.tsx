@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { AlertTriangle, AlarmClock, FileText, Calendar, RefreshCw, X } from 'lucide-react'
+import { TutorialPanel } from '@/components/tutorial-panel'
 
 // ── Demo data ─────────────────────────────────────────────────────────────────
 
@@ -392,6 +393,9 @@ export default function AlertesPage() {
 
       {/* Content */}
       <div style={{ maxWidth: 800, margin: '0 auto', padding: isMobile ? '16px' : '24px' }}>
+        <div style={{ marginBottom: 20 }}>
+          <TutorialPanel sectionId="alertes" />
+        </div>
 
         {/* ── Opérationnel tab ── */}
         {tab === 'operationnel' && (

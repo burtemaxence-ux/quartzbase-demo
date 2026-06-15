@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { TutorialPanel } from '@/components/tutorial-panel'
 import {
   Plus,
   RefreshCw,
@@ -950,6 +951,10 @@ export default function ManagerMarketplacePage() {
         <p style={{ fontSize: '14px', color: 'var(--text-secondary)', margin: 0 }}>
           Publiez des shifts disponibles et trouvez un remplaçant en quelques minutes.
         </p>
+      </div>
+
+      <div style={{ marginBottom: 20 }}>
+        <TutorialPanel sectionId="marketplace" />
       </div>
 
       <MarketplaceManagerClient />
