@@ -273,7 +273,7 @@ export default function HelpPage() {
     : SECTIONS
 
   return (
-    <div style={{ padding: '20px 24px', maxWidth: 896, margin: '0 auto' }}>
+    <div style={{ padding: 'clamp(12px, 4vw, 24px)', maxWidth: 896, margin: '0 auto' }}>
       {/* Header */}
       <div style={{ marginBottom: 24 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 4 }}>
@@ -297,7 +297,7 @@ export default function HelpPage() {
 
       {/* Quick links */}
       {!search && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12, marginBottom: 24 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10, marginBottom: 24 }}>
           {[
             { label: 'Planning',    href: '/manager/planning',    color: '#2563EB', bg: '#EFF6FF', Icon: Calendar  },
             { label: 'Conformité',  href: '/manager/compliance',  color: '#7C3AED', bg: '#EDE9FE', Icon: Scale     },

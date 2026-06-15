@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Wifi, Users, LogIn, LogOut, Coffee, Clock, CalendarDays } from 'lucide-react'
 import { TutorialPanel } from '@/components/tutorial-panel'
 
@@ -83,6 +83,15 @@ function formatDate(dateStr: string): string {
 
 export default function PresencesDashboardPage() {
   const [period, setPeriod] = useState<Period>('today')
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 640px)')
+    setIsMobile(mq.matches)
+    const listener = (e: MediaQueryListEvent) => setIsMobile(e.matches)
+    mq.addEventListener('change', listener)
+    return () => mq.removeEventListener('change', listener)
+  }, [])
 
   const rows = period === 'today' ? TODAY_ROWS : WEEK_ROWS
 
@@ -94,18 +103,18 @@ export default function PresencesDashboardPage() {
   }
 
   return (
-    <div style={{ padding: '16px 24px', maxWidth: 900, margin: '0 auto' }}>
+    <div style={{ padding: isMobile ? '12px 16px' : '16px 24px', maxWidth: 900, margin: '0 auto' }}>
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, marginBottom: 16 }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10, marginBottom: 16 }}>
         <div>
-          <h1 style={{ fontSize: 20, fontWeight: 500, letterSpacing: '-0.02em', color: 'var(--text-primary)', margin: 0 }}>
+          <h1 style={{ fontSize: 18, fontWeight: 500, letterSpacing: '-0.02em', color: 'var(--text-primary)', margin: 0 }}>
             Badgeuse
           </h1>
-          <p style={{ fontSize: 13, color: 'var(--text-tertiary)', marginTop: 4, textTransform: 'capitalize' }}>
+          <p style={{ fontSize: 12, color: 'var(--text-tertiary)', marginTop: 2, textTransform: 'capitalize' }}>
             dimanche 14 juin 2026
           </p>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
           {period === 'today' && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, padding: '6px 12px', borderRadius: 6, color: 'var(--success)', backgroundColor: '#DCFCE7', border: '0.5px solid var(--success)' }}>
               <Wifi size={12} />
@@ -139,7 +148,7 @@ export default function PresencesDashboardPage() {
 
       {/* Stats — today only */}
       {period === 'today' && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 24 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: 10, marginBottom: 20 }}>
           {([
             { key: 'present'  as const, icon: LogIn,  label: 'En service', color: '#16A34A',             bg: '#DCFCE7'        },
             { key: 'on_break' as const, icon: Coffee, label: 'En pause',   color: '#D97706',             bg: '#FEF3C7'        },
@@ -162,8 +171,8 @@ export default function PresencesDashboardPage() {
           <p style={{ fontSize: 14, color: 'var(--text-secondary)' }}>Aucune donnée pour cette période</p>
         </div>
       ) : (
-        <div style={{ borderRadius: 12, overflow: 'hidden', border: '0.5px solid var(--border)', backgroundColor: 'var(--bg-card)' }}>
-          <div style={{ overflowX: 'auto' }}>
+        <div style={{ borderRadius: 12, overflowX: 'auto', border: '0.5px solid var(--border)', backgroundColor: 'var(--bg-card)' }}>
+          <div>
             <table style={{ width: '100%', minWidth: 580, borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={{ borderBottom: '0.5px solid var(--border)', backgroundColor: 'var(--bg-page)' }}>

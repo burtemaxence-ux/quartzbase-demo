@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Check, ChevronRight, BookOpen } from 'lucide-react'
 import { TutorialPanel } from '@/components/tutorial-panel'
 
@@ -94,7 +94,16 @@ function SectionCard({ title, children }: { title: string; children: React.React
 export default function ReglesPage() {
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
   const [settings, setSettings] = useState<Settings>(DEFAULTS)
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 640px)')
+    setIsMobile(mq.matches)
+    const l = (e: MediaQueryListEvent) => setIsMobile(e.matches)
+    mq.addEventListener('change', l)
+    return () => mq.removeEventListener('change', l)
+  }, [])
   const [closedDays, setClosedDays] = useState<number[]>([])
   const [activityType, setActivityType] = useState<ActivityTypeId | ''>('bakery')
   const [customAgreement, setCustomAgreement] = useState('')
@@ -131,7 +140,7 @@ export default function ReglesPage() {
   const selectStyle: React.CSSProperties = { padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', backgroundColor: 'var(--bg-page)', color: 'var(--text-primary)', fontSize: 13, width: '100%', cursor: 'pointer' }
 
   return (
-    <div style={{ maxWidth: 680, margin: '0 auto', padding: '20px 24px' }}>
+    <div style={{ maxWidth: 680, margin: '0 auto', padding: isMobile ? '12px 16px' : '20px 24px' }}>
       <div style={{ marginBottom: 20 }}>
         <h1 style={{ fontSize: 20, fontWeight: 500, letterSpacing: '-0.02em', color: 'var(--text-primary)', margin: 0 }}>Planning</h1>
         <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 4, marginBottom: 0 }}>
@@ -160,7 +169,7 @@ export default function ReglesPage() {
           <p style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
             Étape 1 — Type d&apos;activité
           </p>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8, marginBottom: 20 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: 8, marginBottom: 20 }}>
             {ACTIVITY_TYPES.map(at => (
               <button
                 key={at.id}
@@ -190,7 +199,7 @@ export default function ReglesPage() {
               </p>
 
               {activityType === 'other' ? (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12 }}>
                   <div>
                     <label style={labelStyle}>Nom de la convention</label>
                     <input className="dp-input" value={customAgreement} onChange={e => setCustomAgreement(e.target.value)} placeholder="Ex: Convention entreprise interne" style={{ width: '100%', boxSizing: 'border-box' }} />
@@ -237,7 +246,7 @@ export default function ReglesPage() {
                   <p style={{ fontSize: 11, fontWeight: 600, color: '#D97706', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 12px 0' }}>
                     {conventionDetails.code} — {conventionDetails.label}
                   </p>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 12 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 10, marginBottom: 12 }}>
                     {[
                       { label: 'Durée légale hebdo', value: conventionDetails.weekly_hours },
                       { label: 'Heures sup. dès',    value: conventionDetails.overtime_from },
@@ -282,7 +291,7 @@ export default function ReglesPage() {
           <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 16, marginTop: 0 }}>
             Contraintes appliquées lors de la création des créneaux.
           </p>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16, marginBottom: 16 }}>
             <div>
               <label style={labelStyle}>Durée minimum d&apos;un créneau</label>
               <select value={settings.min_shift_duration} onChange={e => set('min_shift_duration', e.target.value)} style={selectStyle}>
@@ -371,7 +380,7 @@ export default function ReglesPage() {
           <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 16, marginTop: 0 }}>
             Utilisés pour les estimations de coût dans le rapport.
           </p>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16, marginBottom: 16 }}>
             <div>
               <label style={labelStyle}>Taux de charges patronales (%)</label>
               <div style={{ position: 'relative' }}>
@@ -403,7 +412,7 @@ export default function ReglesPage() {
           <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 16, marginTop: 0 }}>
             Personnalisez les couleurs affichées sur la grille de planning.
           </p>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16 }}>
             {[
               { key: 'color_shift'    as const, label: 'Shift normal' },
               { key: 'color_absence'  as const, label: 'Absence'      },

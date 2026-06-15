@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Check, FileText } from 'lucide-react'
 import { TutorialPanel } from '@/components/tutorial-panel'
 
@@ -58,7 +58,16 @@ function NumInput({ value, onChange, placeholder }: { value: number; onChange: (
 export default function ContratsPage() {
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
   const [config, setConfig] = useState<Record<ContractKey, ContractConfig>>(DEFAULTS)
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 640px)')
+    setIsMobile(mq.matches)
+    const l = (e: MediaQueryListEvent) => setIsMobile(e.matches)
+    mq.addEventListener('change', l)
+    return () => mq.removeEventListener('change', l)
+  }, [])
 
   function setField<K extends keyof ContractConfig>(type: ContractKey, field: K, value: ContractConfig[K]) {
     setConfig(prev => ({ ...prev, [type]: { ...prev[type], [field]: value } }))
@@ -77,7 +86,7 @@ export default function ContratsPage() {
   const enabledKeys = CONTRACT_KEYS.filter(k => config[k].enabled)
 
   return (
-    <div style={{ maxWidth: 680, margin: '0 auto', padding: '20px 24px' }}>
+    <div style={{ maxWidth: 680, margin: '0 auto', padding: isMobile ? '12px 16px' : '20px 24px' }}>
       <div style={{ marginBottom: 20 }}>
         <h1 style={{ fontSize: 20, fontWeight: 500, letterSpacing: '-0.02em', color: 'var(--text-primary)', margin: 0 }}>Contrats & RH</h1>
         <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 4, marginBottom: 0 }}>
@@ -136,7 +145,8 @@ export default function ContratsPage() {
                 Aucun type de contrat activé.
               </p>
             ) : (
-              <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: 4 }}>
+            <div style={{ overflowX: 'auto', marginLeft: -4, marginRight: -4, paddingLeft: 4, paddingRight: 4 }}>
+              <table style={{ width: '100%', minWidth: 420, borderCollapse: 'collapse', marginTop: 4 }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--border)' }}>
                     <th style={{ textAlign: 'left', padding: '10px 0', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-tertiary)', fontWeight: 600, paddingRight: 16 }}>Type</th>
@@ -162,6 +172,7 @@ export default function ContratsPage() {
                   ))}
                 </tbody>
               </table>
+            </div>
             )}
 
             <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: 4 }}>

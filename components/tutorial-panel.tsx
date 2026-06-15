@@ -217,7 +217,7 @@ export function TutorialPanel({ sectionId }: { sectionId: string }) {
           </div>
 
           <div style={{ padding: 16 }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12, marginBottom: section.tips?.length ? 12 : 0 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 10, marginBottom: section.tips?.length ? 12 : 0 }}>
               {section.blocks.map((block, i) => (
                 <div key={i} style={{ backgroundColor: 'var(--bg-page)', borderRadius: 10, padding: 14 }}>
                   <p style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10, margin: '0 0 10px 0' }}>
