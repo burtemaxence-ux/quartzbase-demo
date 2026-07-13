@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Clock, CalendarDays, PalmtreeIcon } from "lucide-react";
+import { Clock, CalendarDays, ArrowLeftRight, PalmtreeIcon } from "lucide-react";
 
 const navItems = [
   { href: "/employee", label: "Badgeuse", icon: Clock },
   { href: "/employee/planning", label: "Planning", icon: CalendarDays },
+  { href: "/employee/echanges", label: "Échanges", icon: ArrowLeftRight },
   { href: "/employee/leaves", label: "Congés", icon: PalmtreeIcon },
 ];
 

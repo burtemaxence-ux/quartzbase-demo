@@ -7,6 +7,7 @@ import {
   CalendarDays,
   Users,
   ShieldCheck,
+  ArrowLeftRight,
   Settings,
   HelpCircle,
 } from "lucide-react";
@@ -15,6 +16,7 @@ const navItems = [
   { href: "/manager", label: "Dashboard", icon: LayoutDashboard },
   { href: "/manager/planning", label: "Planning", icon: CalendarDays },
   { href: "/manager/employees", label: "Employés", icon: Users },
+  { href: "/manager/marketplace", label: "Remplacements", icon: ArrowLeftRight },
   { href: "/manager/compliance", label: "Conformité", icon: ShieldCheck },
 ];
 

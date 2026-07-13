@@ -17,6 +17,7 @@ export function Topbar({ mode }: TopbarProps) {
     { href: "/manager", label: "Dashboard" },
     { href: "/manager/planning", label: "Planning" },
     { href: "/manager/employees", label: "Employés" },
+    { href: "/manager/marketplace", label: "Remplacements" },
     { href: "/manager/compliance", label: "Conformité" },
   ];
 

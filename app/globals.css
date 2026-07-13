@@ -106,6 +106,7 @@
 .animate-fade-slide-up { animation: fadeSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) both; }
 .animate-dashboard { animation: dashboardFadeIn 0.5s ease both; }
 .animate-slide-left { animation: slideInLeft 0.4s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.spin { animation: spin 0.9s linear infinite; }
 
 .dp-card {
   background: var(--bg-card);

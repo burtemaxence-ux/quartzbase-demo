@@ -1,5 +1,6 @@
 import { Topbar } from "@/components/topbar";
 import { Sidebar } from "@/components/sidebar";
+import { Chatbot } from "@/components/chatbot";
 
 export default function ManagerLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -20,6 +21,7 @@ export default function ManagerLayout({ children }: { children: React.ReactNode 
           {children}
         </main>
       </div>
+      <Chatbot />
     </div>
   );
 }

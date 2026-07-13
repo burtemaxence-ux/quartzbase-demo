@@ -1,0 +1,92 @@
+[
+  {
+    "id": "boulangerie",
+    "name": "Boulangerie-Pâtisserie artisanale",
+    "idcc": "IDCC 843",
+    "score": 94,
+    "verdict": "Très bon score",
+    "rules": [
+      { "label": "Repos quotidien 11h", "status": "warning" },
+      { "label": "Repos hebdomadaire 35h", "status": "ok" },
+      { "label": "Durée max 10h/jour", "status": "ok" },
+      { "label": "Majoration travail de nuit (21h–6h)", "status": "ok" },
+      { "label": "Pause 20 min / 6h travaillées", "status": "ok" },
+      { "label": "Durée hebdo max 48h", "status": "ok" },
+      { "label": "Prime de fin d'année", "status": "info" }
+    ],
+    "alerts": [
+      {
+        "type": "warning",
+        "employee": "Lucas Dubois",
+        "message": "Repos quotidien insuffisant mardi (10h effectués, 11h minimum requis)",
+        "rule": "Art. L3131-1 · repris par la CCN 843"
+      },
+      {
+        "type": "info",
+        "employee": "Camille Bernard",
+        "message": "Heures supplémentaires semaine 24 (37h planifiées vs 35h contrat)",
+        "rule": "Majoration 25 % — art. 21 CCN Boulangerie"
+      }
+    ]
+  },
+  {
+    "id": "hcr",
+    "name": "Hôtels Cafés Restaurants (HCR)",
+    "idcc": "IDCC 1979",
+    "score": 86,
+    "verdict": "Score à surveiller",
+    "rules": [
+      { "label": "6 jours consécutifs maximum", "status": "warning" },
+      { "label": "2 jours de repos hebdomadaire", "status": "warning" },
+      { "label": "Durée max 11h30/jour (cuisine 11h)", "status": "ok" },
+      { "label": "Coupure : 1 seule par jour", "status": "ok" },
+      { "label": "Repos quotidien 11h", "status": "ok" },
+      { "label": "Durée hebdo max 48h (46h sur 12 sem.)", "status": "ok" },
+      { "label": "Avantage en nature nourriture", "status": "info" }
+    ],
+    "alerts": [
+      {
+        "type": "warning",
+        "employee": "Sophie Martin",
+        "message": "7 jours travaillés d'affilée — la CCN HCR plafonne à 6 jours consécutifs",
+        "rule": "Art. 21 CCN HCR 1979"
+      },
+      {
+        "type": "warning",
+        "employee": "Léa Durand",
+        "message": "Un seul jour de repos cette semaine (2 requis en HCR)",
+        "rule": "Art. 21.3 CCN HCR — repos hebdomadaire"
+      },
+      {
+        "type": "info",
+        "employee": "Marc Petit",
+        "message": "Avantage nourriture non déclaré sur 3 services",
+        "rule": "Avantage en nature — art. 33 CCN HCR"
+      }
+    ]
+  },
+  {
+    "id": "commerce",
+    "name": "Commerce de détail alimentaire",
+    "idcc": "IDCC 2216",
+    "score": 98,
+    "verdict": "Excellent score",
+    "rules": [
+      { "label": "Repos quotidien 11h", "status": "ok" },
+      { "label": "Repos dominical", "status": "ok" },
+      { "label": "Durée max 10h/jour", "status": "ok" },
+      { "label": "Pause 20 min / 6h travaillées", "status": "ok" },
+      { "label": "Majoration heures du dimanche", "status": "info" },
+      { "label": "Durée hebdo max 44h sur 12 sem.", "status": "ok" },
+      { "label": "Amplitude journalière max 13h", "status": "ok" }
+    ],
+    "alerts": [
+      {
+        "type": "info",
+        "employee": "Emma Laurent",
+        "message": "Heures du dimanche à majorer (+20 %) sur le service du samedi soir",
+        "rule": "Art. 5.7 CCN Commerce de détail alimentaire"
+      }
+    ]
+  }
+]

@@ -1,0 +1,92 @@
+{
+  "openShifts": [
+    {
+      "id": "os1",
+      "day": "Sam",
+      "date": "18 juil.",
+      "role": "Boulanger",
+      "start": "06:00",
+      "end": "14:00",
+      "reason": "Sophie Martin en congé",
+      "color": "#6C63FF",
+      "applicants": ["Thomas Moreau", "Antoine Rousseau"],
+      "urgent": true
+    },
+    {
+      "id": "os2",
+      "day": "Dim",
+      "date": "19 juil.",
+      "role": "Vendeur",
+      "start": "08:00",
+      "end": "13:00",
+      "reason": "Renfort marché dominical",
+      "color": "#00D4AA",
+      "applicants": ["Emma Laurent"],
+      "urgent": false
+    },
+    {
+      "id": "os3",
+      "day": "Mer",
+      "date": "22 juil.",
+      "role": "Pâtissier",
+      "start": "06:00",
+      "end": "13:00",
+      "reason": "Camille Bernard en formation",
+      "color": "#FFB347",
+      "applicants": [],
+      "urgent": false
+    }
+  ],
+  "swaps": [
+    {
+      "id": "sw1",
+      "from": "Léa Durand",
+      "to": "Emma Laurent",
+      "fromShift": "Mer 09:00–17:00",
+      "toShift": "Ven 09:00–17:00",
+      "note": "Rendez-vous médical mercredi"
+    },
+    {
+      "id": "sw2",
+      "from": "Thomas Moreau",
+      "to": "Sophie Martin",
+      "fromShift": "Sam 06:00–14:00",
+      "toShift": "Mar 06:00–14:00",
+      "note": "Convenance personnelle"
+    }
+  ],
+  "available": [
+    {
+      "id": "av1",
+      "day": "Samedi 18 juil.",
+      "role": "Vendeur",
+      "start": "14:00",
+      "end": "19:00",
+      "bonus": "+12 % majoration week-end",
+      "postedBy": "Marc (manager)"
+    },
+    {
+      "id": "av2",
+      "day": "Dimanche 19 juil.",
+      "role": "Vendeur",
+      "start": "08:00",
+      "end": "13:00",
+      "bonus": "+20 % majoration dimanche",
+      "postedBy": "Marc (manager)"
+    }
+  ],
+  "myExchanges": [
+    {
+      "id": "mx1",
+      "label": "Proposé à l'équipe",
+      "detail": "Mon shift de jeudi · 14:00–22:00",
+      "status": "pending"
+    },
+    {
+      "id": "mx2",
+      "label": "Échange accepté avec Thomas",
+      "detail": "Mardi ↔ Jeudi",
+      "status": "accepted"
+    }
+  ]
+}

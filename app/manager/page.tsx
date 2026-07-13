@@ -65,9 +65,9 @@ export default function ManagerDashboard() {
   ];
 
   const quickActions = [
-    { label: "Publier le planning", color: "var(--violet)" },
-    { label: "Valider les congés", color: "var(--yellow)" },
-    { label: "Exporter PDF", color: "var(--text-muted)" },
+    { label: "Générer le planning", color: "var(--violet)", href: "/manager/planning" },
+    { label: "Remplacements", color: "var(--green)", href: "/manager/marketplace" },
+    { label: "Voir la conformité", color: "var(--yellow)", href: "/manager/compliance" },
   ];
 
   return (
@@ -209,11 +209,10 @@ export default function ManagerDashboard() {
           Actions rapides
         </h2>
         <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-          {quickActions.map(({ label, color }) => (
-            <button
+          {quickActions.map(({ label, color, href }) => (
+            <a
               key={label}
-              disabled
-              title="Fonctionnalité désactivée en démo"
+              href={href}
               style={{
                 padding: "9px 18px",
                 borderRadius: "10px",
@@ -222,12 +221,12 @@ export default function ManagerDashboard() {
                 color,
                 background: `${color}18`,
                 border: `1px solid ${color}33`,
-                cursor: "not-allowed",
-                opacity: 0.6,
+                textDecoration: "none",
+                transition: "background 0.15s",
               }}
             >
               {label}
-            </button>
+            </a>
           ))}
         </div>
       </div>
